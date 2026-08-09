@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Phishing Awareness Tool</title>
+
+    <link rel="stylesheet"
+          href="/static/css/style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- Header -->
+        <header class="header">
+            <h1>Phishing Awareness Tool</h1>
+
+            <p>
+                Analyze a URL and detect possible phishing indicators.
+            </p>
+        </header>
+
+
+        <!-- URL Analysis Card -->
+        <main class="card">
+
+            <h2>URL Analyzer</h2>
+
+            <form id="analyzeForm">
+
+                <label for="urlInput">
+                    Enter a URL
+                </label>
+
+                <div class="input-group">
+
+                    <input
+                        type="text"
+                        id="urlInput"
+                        placeholder="https://example.com"
+                        required
+                    >
+
+                    <button type="submit">
+                        Analyze URL
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <!-- Loading -->
+            <div id="loading" class="hidden">
+                <p>Analyzing URL...</p>
+            </div>
+
+
+            <!-- Results -->
+            <section id="result" class="result hidden">
+
+                <h2>Analysis Result</h2>
+
+
+                <!-- Risk Score -->
+                <div class="result-item">
+
+                    <span class="label">
+                        Risk Score:
+                    </span>
+
+                    <span id="riskScore">
+                        0
+                    </span>
+
+                </div>
+
+
+                <!-- Risk Level -->
+                <div class="result-item">
+
+                    <span class="label">
+                        Risk Level:
+                    </span>
+
+                    <span id="riskLevel">
+                        Unknown
+                    </span>
+
+                </div>
+
+
+                <!-- Domain -->
+                <div class="result-item">
+
+                    <span class="label">
+                        Domain:
+                    </span>
+
+                    <span id="domain">
+                        -
+                    </span>
+
+                </div>
+
+
+                <!-- Reasons -->
+                <div class="reasons-section">
+
+                    <h3>Detected Indicators</h3>
+
+                    <ul id="reasonsList">
+
+                    </ul>
+
+                </div>
+
+            </section>
+
+
+            <!-- Error -->
+            <div id="error" class="error hidden">
+
+                <p id="errorMessage">
+                    Something went wrong.
+                </p>
+
+            </div>
+
+        </main>
+
+
+        <!-- Awareness Section -->
+        <section class="awareness">
+
+            <h2>Phishing Awareness Tips</h2>
+
+            <div class="tips">
+
+                <div class="tip">
+                    <h3>🔍 Check the Domain</h3>
+                    <p>
+                        Carefully check the real domain name before entering
+                        any sensitive information.
+                    </p>
+                </div>
+
+                <div class="tip">
+                    <h3>🔒 HTTPS Is Not Enough</h3>
+                    <p>
+                        HTTPS encrypts the connection, but it does not guarantee
+                        that a website is trustworthy.
+                    </p>
+                </div>
+
+                <div class="tip">
+                    <h3>⚠️ Be Careful with Urgency</h3>
+                    <p>
+                        Phishing messages often create urgency to pressure
+                        users into acting quickly.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Footer -->
+        <footer>
+
+            <p>
+                Phishing Awareness Tool
+                | Educational Project
+            </p>
+
+        </footer>
+
+    </div>
+
+
+    <script src="/static/js/script.js"></script>
+
+</body>
+</html>
