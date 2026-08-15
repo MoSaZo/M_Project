@@ -1,190 +1,459 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Phishing Awareness Tool</title>
 
-    <link rel="stylesheet"
-          href="/static/css/style.css">
+    <link
+        rel="stylesheet"
+        href="/static/css/style.css?v=5"
+    >
+
 </head>
+
 
 <body>
 
-    <div class="container">
-
-        <!-- Header -->
-        <header class="header">
-            <h1>Phishing Awareness Tool</h1>
-
-            <p>
-                Analyze a URL and detect possible phishing indicators.
-            </p>
-        </header>
+<div class="container">
 
 
-        <!-- URL Analysis Card -->
-        <main class="card">
+    <!-- Header -->
 
-            <h2>URL Analyzer</h2>
+    <header class="header">
 
-            <form id="analyzeForm">
+        <h1>
+            Phishing Awareness Tool
+        </h1>
 
-                <label for="urlInput">
-                    Enter a URL
-                </label>
+        <p>
+            Analyze a URL and detect
+            possible phishing indicators.
+        </p>
 
-                <div class="input-group">
-
-                    <input
-                        type="text"
-                        id="urlInput"
-                        placeholder="https://example.com"
-                        required
-                    >
-
-                    <button type="submit">
-                        Analyze URL
-                    </button>
-
-                </div>
-
-            </form>
+    </header>
 
 
-            <!-- Loading -->
-            <div id="loading" class="hidden">
-                <p>Analyzing URL...</p>
+    <!-- Main Card -->
+
+    <main class="card">
+
+        <h2>
+            URL Analyzer
+        </h2>
+
+
+        <form id="analyzeForm">
+
+            <label for="urlInput">
+                Enter a URL
+            </label>
+
+
+            <div class="input-group">
+
+                <input
+                    type="text"
+                    id="urlInput"
+                    placeholder="https://example.com"
+                    required
+                >
+
+
+                <button type="submit">
+                    Analyze URL
+                </button>
+
             </div>
 
-
-            <!-- Results -->
-            <section id="result" class="result hidden">
-
-                <h2>Analysis Result</h2>
+        </form>
 
 
-                <!-- Risk Score -->
-                <div class="result-item">
+        <!-- Loading -->
 
-                    <span class="label">
-                        Risk Score:
-                    </span>
+        <div
+            id="loading"
+            class="hidden"
+        >
+
+            <p>
+                Analyzing URL...
+            </p>
+
+        </div>
+
+
+        <!-- Results -->
+
+        <section
+            id="result"
+            class="result hidden"
+        >
+
+            <h2>
+                Analysis Result
+            </h2>
+
+
+            <!-- Risk -->
+
+            <div class="risk-card">
+
+                <div class="risk-score-circle">
 
                     <span id="riskScore">
                         0
                     </span>
 
+                    <small>
+                        /100
+                    </small>
+
                 </div>
 
 
-                <!-- Risk Level -->
-                <div class="result-item">
+                <div class="risk-info">
 
-                    <span class="label">
-                        Risk Level:
-                    </span>
+                    <p class="risk-title">
+                        Risk Level
+                    </p>
 
-                    <span id="riskLevel">
+
+                    <span
+                        id="riskLevel"
+                        class="risk-badge"
+                    >
                         Unknown
                     </span>
 
                 </div>
 
+            </div>
 
-                <!-- Domain -->
+
+            <!-- Risk Bar -->
+
+            <div class="risk-bar-container">
+
+                <div class="risk-bar">
+
+                    <div
+                        id="riskBar"
+                        class="risk-bar-fill"
+                    ></div>
+
+                </div>
+
+            <div id="riskSummary" class="risk-summary">
+                Waiting for analysis...
+            </div>
+
+
+                <div class="risk-scale">
+
+                    <span>
+                        Safe
+                    </span>
+
+                    <span>
+                        Suspicious
+                    </span>
+
+                    <span>
+                        High Risk
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- URL Information -->
+
+            <div class="url-details">
+
+                <h3>
+                    URL Information
+                </h3>
+
+
                 <div class="result-item">
 
                     <span class="label">
-                        Domain:
+                        Hostname:
                     </span>
 
-                    <span id="domain">
+                    <span id="hostname">
                         -
                     </span>
 
                 </div>
 
 
-                <!-- Reasons -->
-                <div class="reasons-section">
+                <div class="result-item">
 
-                    <h3>Detected Indicators</h3>
+                    <span class="label">
+                        Registered Domain:
+                    </span>
 
-                    <ul id="reasonsList">
-
-                    </ul>
+                    <span id="registeredDomain">
+                        -
+                    </span>
 
                 </div>
 
-            </section>
+
+                <div class="result-item">
+
+                    <span class="label">
+                        Subdomain:
+                    </span>
+
+                    <span id="subdomain">
+                        -
+                    </span>
+
+                </div>
 
 
-            <!-- Error -->
-            <div id="error" class="error hidden">
+                <div class="result-item">
 
-                <p id="errorMessage">
-                    Something went wrong.
-                </p>
+                    <span class="label">
+                        Protocol:
+                    </span>
+
+                    <span id="protocol">
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="result-item">
+
+                    <span class="label">
+                        Subdomain Levels:
+                    </span>
+
+                    <span id="subdomainLevels">
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="result-item">
+
+                    <span class="label">
+                        TLD:
+                    </span>
+
+                    <span id="tld">
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="result-item">
+
+                    <span class="label">
+                        Query Parameters:
+                    </span>
+
+                    <span id="queryParameterCount">
+                        0
+                    </span>
+
+                </div>
 
             </div>
 
-        </main>
+
+            <!-- Indicators -->
+
+            <div class="reasons-section">
+
+                <h3>
+                    Detected Indicators
+                </h3>
 
 
-        <!-- Awareness Section -->
-        <section class="awareness">
-
-            <h2>Phishing Awareness Tips</h2>
-
-            <div class="tips">
-
-                <div class="tip">
-                    <h3>🔍 Check the Domain</h3>
-                    <p>
-                        Carefully check the real domain name before entering
-                        any sensitive information.
-                    </p>
-                </div>
-
-                <div class="tip">
-                    <h3>🔒 HTTPS Is Not Enough</h3>
-                    <p>
-                        HTTPS encrypts the connection, but it does not guarantee
-                        that a website is trustworthy.
-                    </p>
-                </div>
-
-                <div class="tip">
-                    <h3>⚠️ Be Careful with Urgency</h3>
-                    <p>
-                        Phishing messages often create urgency to pressure
-                        users into acting quickly.
-                    </p>
-                </div>
+                <ul id="reasonsList">
+                </ul>
 
             </div>
 
         </section>
 
 
-        <!-- Footer -->
-        <footer>
+        <!-- Error -->
 
-            <p>
-                Phishing Awareness Tool
-                | Educational Project
+        <div
+            id="error"
+            class="error hidden"
+        >
+
+            <p id="errorMessage">
+                Something went wrong.
             </p>
 
-        </footer>
+        </div>
 
-    </div>
+    </main>
+
+    <section class="card email-card">
+
+        <h2>Educational Email</h2>
+
+        <p class="email-description">
+            Send an educational phishing-awareness email.
+        </p>
+
+        <form id="emailForm">
+
+            <label for="recipientInput">
+                Recipient Email
+            </label>
+
+            <input
+                type="email"
+                id="recipientInput"
+                placeholder="student@example.com"
+                required
+            >
+
+            <label for="subjectInput">
+                Subject
+            </label>
+
+            <input
+                type="text"
+                id="subjectInput"
+                value="Phishing Awareness Training"
+                required
+            >
+
+            <label for="bodyInput">
+                Email Message
+            </label>
+
+            <textarea
+                id="bodyInput"
+                rows="8"
+                required
+            >This is an educational phishing-awareness message.
+
+    Always check the domain before entering sensitive information.
+
+    HTTPS alone does not guarantee that a website is trustworthy.
+
+    Think before clicking suspicious links.</textarea>
+
+            <button type="submit">
+                Send Educational Email
+            </button>
+
+        </form>
+
+        <div
+            id="emailStatus"
+            class="email-status hidden"
+        ></div>
+
+    </section>
 
 
-    <script src="/static/js/script.js"></script>
+
+    <!-- Awareness -->
+
+    <section class="awareness">
+
+        <h2>
+            Phishing Awareness Tips
+        </h2>
+
+
+        <div class="tips">
+
+
+            <div class="tip">
+
+                <h3>
+                    🔍 Check the Domain
+                </h3>
+
+                <p>
+                    Carefully check the real
+                    domain name before entering
+                    sensitive information.
+                </p>
+
+            </div>
+
+
+            <div class="tip">
+
+                <h3>
+                    🔒 HTTPS Is Not Enough
+                </h3>
+
+                <p>
+                    HTTPS encrypts the connection,
+                    but it does not guarantee that
+                    a website is trustworthy.
+                </p>
+
+            </div>
+
+
+            <div class="tip">
+
+                <h3>
+                    ⚠️ Be Careful with Urgency
+                </h3>
+
+                <p>
+                    Phishing messages often create
+                    urgency to pressure users into
+                    acting quickly.
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- Footer -->
+
+    <footer>
+
+        <p>
+            Phishing Awareness Tool |
+            Educational Project
+        </p>
+
+    </footer>
+
+
+</div>
+
+
+<script
+    src="/static/js/script.js?v=5"
+></script>
+
 
 </body>
+
 </html>
