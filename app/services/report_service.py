@@ -2,25 +2,20 @@
 Report service.
 
 Provides application-level operations for analysis reports.
-
-Report construction belongs to the analyzer package.
-This service converts generated analysis data into
-application-facing report representations.
 """
 
-from typing import Any
-
+from app.database.models import URLScan
 from app.schemas.responses import URLAnalysisResponse
 
 
 class ReportService:
     """
-    Application service for working with analysis reports.
+    Application service responsible for report formatting.
     """
 
     @staticmethod
     def to_response(
-        analysis: dict[str, Any],
+        analysis: dict,
     ) -> URLAnalysisResponse:
         """
         Convert an analysis dictionary into the API response schema.
@@ -32,33 +27,67 @@ class ReportService:
 
     @staticmethod
     def build_summary(
-        analysis: dict[str, Any],
+        analysis: dict,
     ) -> str:
         """
-        Build a concise human-readable risk summary.
+        Build a concise human-readable summary.
         """
-
-        risk_level = str(
-            analysis.get("risk_level", "Unknown"),
-        )
-
-        risk_score = int(
-            analysis.get("risk_score", 0),
-        )
 
         reasons = analysis.get(
             "reasons",
             [],
         )
 
-        if isinstance(reasons, list) and reasons:
-            primary_reason = str(reasons[0])
-            return (
-                f"{risk_level} ({risk_score}/100): "
-                f"{primary_reason}"
+        if isinstance(reasons, list):
+            reason_text = (
+                reasons[0]
+                if reasons
+                else "No suspicious indicators detected."
             )
+        else:
+            reason_text = str(reasons)
 
-        return f"{risk_level} ({risk_score}/100)."
+        return (
+            f"{analysis['risk_level']} "
+            f"({analysis['risk_score']}/100): "
+            f"{reason_text}"
+        )
 
+    @staticmethod
+    def build_text_report(
+        scan: URLScan,
+    ) -> str:
+        """
+        Build a plain-text report from a stored analysis.
+        """
 
-report_service = ReportService()
+        lines = [
+            "=" * 40,
+            "URL SECURITY REPORT",
+            "=" * 40,
+            "",
+            f"URL: {scan.url}",
+            f"Hostname: {scan.hostname}",
+            f"Registered Domain: {scan.registered_domain}",
+            f"Protocol: {scan.protocol}",
+            "",
+            f"Risk Score: {scan.risk_score}/100",
+            f"Risk Level: {scan.risk_level}",
+            "",
+            "Reasons:",
+        ]
+
+        if scan.reasons:
+            for reason in scan.reasons.splitlines():
+                lines.append(f"- {reason}")
+        else:
+            lines.append("- No suspicious indicators detected.")
+
+        lines.extend(
+            [
+                "",
+                f"Generated: {scan.created_at}",
+            ]
+        )
+
+        return "\n".join(lines)
