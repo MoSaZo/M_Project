@@ -13,7 +13,7 @@ from app.schemas.responses import URLAnalysisResponse
 from app.services.analyzer_service import (
     analyze_and_save,
 )
-
+from app.services.report_service import ReportService
 
 router = APIRouter(
     prefix="/analyze",
@@ -41,7 +41,7 @@ def analyze_url_endpoint(
             url=request.url,
         )
 
-        return result
+        return ReportService.to_response(result)
 
     except ValueError as exc:
         raise HTTPException(
