@@ -1,0 +1,70 @@
+"""
+Tests for history API endpoints.
+"""
+
+from fastapi.testclient import TestClient
+
+
+def test_history_returns_list(
+    client: TestClient,
+) -> None:
+    """
+    History endpoint should return a list of scans.
+    """
+
+    response = client.get(
+        "/api/history",
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert isinstance(data, list)
+
+
+def test_history_item_not_found(
+    client: TestClient,
+) -> None:
+    """
+    Requesting a non-existing history item should return HTTP 404.
+    """
+
+    response = client.get(
+        "/api/history/99999",
+    )
+
+    assert response.status_code == 404
+
+
+def test_history_contains_created_scan(
+    client: TestClient,
+) -> None:
+    """
+    A newly created analysis should appear in history.
+    """
+
+    analysis_response = client.post(
+        "/api/analyze",
+        json={
+            "url": "https://www.google.com",
+        },
+    )
+
+    assert analysis_response.status_code == 200
+
+    scan_id = analysis_response.json()["id"]
+
+    response = client.get(
+        f"/api/history/{scan_id}",
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["id"] == scan_id
+    assert data["url"] == "https://www.google.com"
+    assert data["hostname"] == "www.google.com"
+    assert data["risk_score"] == 0
+    assert data["risk_level"] == "Safe"
