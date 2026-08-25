@@ -3,9 +3,18 @@ Risk calculation engine.
 
 Calculates the final phishing risk score,
 severity levels, reasons, and overall risk level.
+
+Rule-based risk scoring is kept independent from
+the machine-learning prediction. The final risk level
+can optionally take a high-confidence ML prediction
+into account.
 """
 
 from typing import Any
+
+
+ML_HIGH_CONFIDENCE_THRESHOLD = 0.90
+ML_MEDIUM_CONFIDENCE_THRESHOLD = 0.70
 
 
 def get_severity(score: int) -> str:
@@ -22,13 +31,54 @@ def get_severity(score: int) -> str:
     return "Low"
 
 
+def calculate_final_risk_level(
+    risk_score: int,
+    ml_prediction: str | None = None,
+    ml_probability: float | None = None,
+) -> str:
+    """
+    Determine the final risk level from rule-based risk
+    and optional machine-learning prediction.
+
+    Rule-based thresholds remain the primary scoring system.
+    A high-confidence ML phishing prediction can raise a
+    Safe result to Suspicious and a Suspicious result to
+    High Risk.
+    """
+
+    if risk_score < 20:
+        risk_level = "Safe"
+    elif risk_score < 50:
+        risk_level = "Suspicious"
+    else:
+        risk_level = "High Risk"
+
+    if (
+        ml_prediction == "phishing"
+        and ml_probability is not None
+    ):
+        if ml_probability >= ML_HIGH_CONFIDENCE_THRESHOLD:
+            if risk_level == "Safe":
+                return "Suspicious"
+
+            if risk_level == "Suspicious":
+                return "High Risk"
+
+    return risk_level
+
+
 def calculate_risk(
     indicators: list[dict[str, Any]],
+    ml_prediction: str | None = None,
+    ml_probability: float | None = None,
 ) -> dict[str, Any]:
     """
-    Calculate the final phishing risk score.
+    Calculate the final phishing risk score and level.
 
-    The total score is capped at 100.
+    The rule-based score is capped at 100.
+
+    Machine-learning output is optional so existing callers
+    remain compatible.
     """
 
     risk_score = 0
@@ -66,12 +116,11 @@ def calculate_risk(
         100,
     )
 
-    if risk_score < 20:
-        risk_level = "Safe"
-    elif risk_score < 50:
-        risk_level = "Suspicious"
-    else:
-        risk_level = "High Risk"
+    risk_level = calculate_final_risk_level(
+        risk_score=risk_score,
+        ml_prediction=ml_prediction,
+        ml_probability=ml_probability,
+    )
 
     return {
         "risk_score": risk_score,
