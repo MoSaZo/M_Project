@@ -52,6 +52,10 @@ class URLAnalysisResponse(BaseModel):
 
     risk_level: str
 
+    ml_prediction: str
+
+    ml_probability: float
+
     reasons: list[str]
 
     indicators: list[IndicatorResponse]

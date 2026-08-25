@@ -13,3 +13,10 @@ venv/
 
 .env
 *.db
+
+# ML datasets
+evaluation/PhiUSIIL_Phishing_URL_Dataset.csv
+
+# Trained models
+models/*.pkl
+models/*.joblib
