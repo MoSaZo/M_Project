@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="PhishGuard URL Security Analyzer"
+    >
+
+    <title>PhishGuard — URL Security Analyzer</title>
+
+    <link
+        rel="stylesheet"
+        href="/frontend/style.css"
+    >
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <!-- Header -->
+
+    <header class="topbar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                🛡️
+            </div>
+
+            <div>
+                <h1>PhishGuard</h1>
+
+                <p>
+                    URL Security Analyzer
+                </p>
+            </div>
+
+        </div>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            API Online
+        </div>
+
+    </header>
+
+
+    <main>
+
+        <!-- Hero -->
+
+        <section class="hero">
+
+            <div class="hero-badge">
+                ML-POWERED URL ANALYSIS
+            </div>
+
+            <h2>
+                Is this URL
+                <span>safe?</span>
+            </h2>
+
+            <p>
+                Analyze a URL for phishing indicators,
+                suspicious patterns and security risks.
+            </p>
+
+
+            <form
+                id="analyze-form"
+                class="url-form"
+            >
+
+                <div class="input-wrapper">
+
+                    <span class="input-icon">
+                        🔗
+                    </span>
+
+                    <input
+                        id="url-input"
+                        type="text"
+                        placeholder="https://example.com"
+                        autocomplete="off"
+                        required
+                    >
+
+                </div>
+
+                <button
+                    id="analyze-button"
+                    type="submit"
+                >
+                    Analyze URL
+                </button>
+
+            </form>
+
+
+            <p
+                id="error-message"
+                class="error-message"
+            ></p>
+
+        </section>
+
+
+        <!-- Loading -->
+
+        <section
+            id="loading"
+            class="loading hidden"
+        >
+
+            <div class="spinner"></div>
+
+            <p>
+                Analyzing URL...
+            </p>
+
+            <small>
+                Running security checks and ML prediction
+            </small>
+
+        </section>
+
+
+        <!-- Result -->
+
+        <section
+            id="result-section"
+            class="result-section hidden"
+        >
+
+            <div class="result-header">
+
+                <div>
+
+                    <span class="section-label">
+                        ANALYSIS RESULT
+                    </span>
+
+                    <h3 id="result-url"></h3>
+
+                </div>
+
+                <button
+                    id="new-scan-button"
+                    class="secondary-button"
+                    type="button"
+                >
+                    New Scan
+                </button>
+
+            </div>
+
+
+            <!-- Main Risk Cards -->
+
+            <div class="result-grid">
+
+                <div
+                    id="risk-card"
+                    class="risk-card"
+                >
+
+                    <span class="card-label">
+                        RISK SCORE
+                    </span>
+
+                    <div class="risk-score">
+                        <span id="risk-score">0</span>
+                        <small>/100</small>
+                    </div>
+
+                    <div
+                        id="risk-level"
+                        class="risk-level"
+                    >
+                        Safe
+                    </div>
+
+                    <div
+                        id="risk-summary"
+                        class="risk-summary"
+                    >
+                        Waiting for analysis...
+                    </div>
+
+                </div>
+
+
+                <div class="info-card">
+
+                    <span class="card-label">
+                        ML PREDICTION
+                    </span>
+
+                    <div
+                        id="ml-prediction"
+                        class="prediction"
+                    >
+                        legitimate
+                    </div>
+
+                    <div class="probability-bar">
+
+                        <div
+                            id="probability-fill"
+                            class="probability-fill"
+                        ></div>
+
+                    </div>
+
+                    <div class="probability-row">
+
+                        <span>
+                            Phishing probability
+                        </span>
+
+                        <strong id="ml-probability">
+                            0%
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Risk Scale -->
+
+            <div class="risk-scale-container">
+
+                <div class="risk-scale">
+
+                    <span>Safe</span>
+
+                    <span>Suspicious</span>
+
+                    <span>High Risk</span>
+
+                </div>
+
+            </div>
+
+
+            <!-- URL Details -->
+
+            <div class="details-card">
+
+                <div class="card-title">
+                    <span>🌐</span>
+                    URL Details
+                </div>
+
+
+                <div class="details-grid">
+
+                    <div>
+                        <span>Hostname</span>
+                        <strong id="hostname">—</strong>
+                    </div>
+
+                    <div>
+                        <span>Registered Domain</span>
+                        <strong id="registered-domain">
+                            —
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Domain</span>
+                        <strong id="domain">
+                            —
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>TLD</span>
+                        <strong id="suffix">
+                            —
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Protocol</span>
+                        <strong id="protocol">
+                            —
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Subdomain</span>
+                        <strong id="subdomain">
+                            —
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Subdomain Levels</span>
+                        <strong id="subdomain-levels">
+                            0
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Path</span>
+                        <strong id="path">
+                            /
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Query Parameters</span>
+                        <strong id="query-count">
+                            0
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Security Analysis -->
+
+            <div class="reasons-card">
+
+                <div class="card-title">
+                    <span>🔍</span>
+                    Security Analysis
+                </div>
+
+
+                <div
+                    id="reasons-list"
+                    class="reasons-list"
+                ></div>
+
+            </div>
+
+
+            <!-- Indicators -->
+
+            <div class="indicators-card">
+
+                <div class="card-title">
+                    <span>🚨</span>
+                    Detected Indicators
+                </div>
+
+
+                <div
+                    id="indicators-list"
+                    class="indicators-list"
+                ></div>
+
+            </div>
+
+
+            <!-- Actions -->
+
+            <div class="actions">
+
+                <button
+                    id="report-button"
+                    class="action-button"
+                    type="button"
+                >
+                    📄 View Report
+                </button>
+
+                <button
+                    id="pdf-button"
+                    class="action-button"
+                    type="button"
+                >
+                    📥 Download PDF
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- History -->
+
+        <section class="history-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <span class="section-label">
+                        HISTORY
+                    </span>
+
+                    <h3>
+                        Recent Scans
+                    </h3>
+
+                </div>
+
+                <button
+                    id="refresh-history"
+                    class="secondary-button"
+                    type="button"
+                >
+                    Refresh
+                </button>
+
+            </div>
+
+
+            <div
+                id="history-list"
+                class="history-list"
+            >
+
+                <div class="empty-history">
+                    No scans yet.
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Awareness -->
+
+        <section class="awareness-section">
+
+            <div class="section-heading awareness-heading">
+
+                <div>
+
+                    <span class="section-label">
+                        SECURITY EDUCATION
+                    </span>
+
+                    <h3>
+                        Phishing Awareness
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="tips">
+
+                <div class="tip">
+
+                    <div class="tip-icon">
+                        🔍
+                    </div>
+
+                    <h4>
+                        Check the Domain
+                    </h4>
+
+                    <p>
+                        Carefully inspect the real
+                        domain before entering
+                        sensitive information.
+                    </p>
+
+                </div>
+
+
+                <div class="tip">
+
+                    <div class="tip-icon">
+                        🔒
+                    </div>
+
+                    <h4>
+                        HTTPS Is Not Enough
+                    </h4>
+
+                    <p>
+                        HTTPS protects the connection,
+                        but it does not prove that
+                        a website is trustworthy.
+                    </p>
+
+                </div>
+
+
+                <div class="tip">
+
+                    <div class="tip-icon">
+                        ⚠️
+                    </div>
+
+                    <h4>
+                        Watch for Urgency
+                    </h4>
+
+                    <p>
+                        Phishing messages often use
+                        urgency to pressure users
+                        into acting quickly.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Educational Email -->
+
+        <section class="email-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <span class="section-label">
+                        AWARENESS EMAIL
+                    </span>
+
+                    <h3>
+                        Educational Email
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="email-card">
+
+                <p class="email-description">
+                    Send an educational
+                    phishing-awareness message.
+                </p>
+
+
+                <form id="email-form">
+
+                    <div class="email-grid">
+
+                        <div>
+
+                            <label for="recipient-input">
+                                Recipient Email
+                            </label>
+
+                            <input
+                                id="recipient-input"
+                                type="email"
+                                placeholder="student@example.com"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div>
+
+                            <label for="subject-input">
+                                Subject
+                            </label>
+
+                            <input
+                                id="subject-input"
+                                type="text"
+                                value="Phishing Awareness Training"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <label for="body-input">
+                        Email Message
+                    </label>
+
+                    <textarea
+                        id="body-input"
+                        rows="8"
+                        required
+                    >This is an educational phishing-awareness message.
+
+Always check the domain before entering sensitive information.
+
+HTTPS alone does not guarantee that a website is trustworthy.
+
+Think before clicking suspicious links.</textarea>
+
+
+                    <button
+                        type="submit"
+                        class="email-button"
+                    >
+                        Send Educational Email
+                    </button>
+
+                </form>
+
+
+                <div
+                    id="email-status"
+                    class="email-status hidden"
+                ></div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+
+        <span>PhishGuard</span>
+
+        <span>•</span>
+
+        <span>
+            Machine Learning URL Security
+        </span>
+
+    </footer>
+
+</div>
+
+
+<script src="/frontend/app.js"></script>
+
+</body>
+</html>

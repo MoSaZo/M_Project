@@ -1,136 +1,179 @@
-# Phishing Awareness Tool
+# Hybrid Phishing URL Detection System
 
-A FastAPI-based web application for analyzing URLs and identifying common phishing indicators. The project also provides an educational email feature designed to help users learn about phishing threats.
+A hybrid phishing URL detection system built with **FastAPI**, combining **rule-based analysis** and **machine learning** to identify suspicious URLs. The project provides a REST API, PDF report generation, scan history, phishing awareness email functionality, and a comprehensive automated test suite.
 
-## Features
+---
 
-### URL Analysis
+# Features
+
+## URL Analysis
 
 * URL validation and parsing
-* Hostname inspection
+* Hostname extraction
 * Registered domain detection
 * Subdomain detection
 * Subdomain level counting
-* TLD identification
 * Protocol detection
+* Path analysis
 * Query parameter analysis
-* Suspicious URL indicator detection
+* Suspicious character detection
+* Trusted-domain impersonation detection
+* External redirect detection
+* Phishing keyword detection
+* Compound phishing rule detection
 
-### Risk Analysis
+---
 
-* Risk score calculation from 0 to 100
-* Overall risk classification:
+## Hybrid Risk Engine
 
-  * Safe
-  * Suspicious
-  * High Risk
-* Severity classification for individual indicators
-* Human-readable explanations for detected indicators
-* Visual risk score and risk bar in the web interface
+The project combines:
 
-### Awareness & Education
+* Rule-based phishing detection
+* Machine Learning prediction
+* Hybrid risk classification
+* Risk score normalization (0–100)
 
-* Educational phishing awareness email
-* SMTP-based email sending
-* Custom recipient, subject, and message
-* Built-in phishing awareness tips
+Risk Levels:
 
-### Web Interface
+|  Score | Level      |
+| -----: | ---------- |
+|   0–19 | Safe       |
+|  20–49 | Suspicious |
+| 50–100 | High Risk  |
 
-* Jinja2-based web interface
-* Responsive design
-* Interactive URL analysis
-* Risk visualization
-* Detected indicator list
-* URL information display
-* Educational email form
+Machine Learning predictions can increase the final risk level when phishing confidence is high.
 
-### API
+---
 
-* FastAPI REST endpoints
-* Pydantic request validation
-* Automatic API documentation
+## Machine Learning
+
+The system includes a phishing prediction model capable of classifying URLs as:
+
+* Legitimate
+* Phishing
+
+The prediction is combined with rule-based analysis to improve detection accuracy.
+
+---
+
+## Reports
+
+The application can generate:
+
+* Analysis report
+* PDF report
+* Human-readable phishing explanations
+* Indicator severity list
+
+---
+
+## Database
+
+SQLite is used to store:
+
+* Scan history
+* Analysis results
+
+---
+
+## Awareness Email
+
+SMTP-based educational email functionality allows sending phishing awareness messages.
+
+---
+
+## REST API
+
+Available endpoints include:
+
+| Method | Endpoint           | Description                   |
+| ------ | ------------------ | ----------------------------- |
+| POST   | `/analyze`         | Analyze a URL                 |
+| GET    | `/history`         | Retrieve scan history         |
+| GET    | `/report/{id}`     | Generate analysis report      |
+| GET    | `/report/{id}/pdf` | Download PDF report           |
+| POST   | `/email`           | Send phishing awareness email |
+
+FastAPI automatically provides:
+
 * Swagger UI
 * ReDoc
 
 ---
 
-## Tech Stack
+# Technology Stack
 
-* Python 3
+* Python 3.10
 * FastAPI
 * Pydantic
+* SQLAlchemy
+* SQLite
+* scikit-learn
+* ReportLab
 * Jinja2
+* pytest
+* pytest-cov
 * Uvicorn
-* tldextract
-* HTML5
-* CSS3
-* JavaScript
-* SMTP
 
 ---
 
-## Project Structure
+# Project Structure
 
 ```text
 M_Project/
 │
 ├── app/
 │   ├── analyzer/
-│   │   ├── risk_engine.py
-│   │   └── url_analyzer.py
-│   │
+│   ├── api/
+│   ├── core/
 │   ├── database/
-│   │
 │   ├── models/
-│   │   └── schemas.py
-│   │
-│   └── email_sender.py
+│   ├── schemas/
+│   ├── services/
+│   ├── utils/
+│   └── main.py
 │
-├── static/
-│   ├── css/
-│   │   └── style.css
-│   └── js/
-│       └── script.js
+├── tests/
 │
-├── templates/
-│   └── index.html
+├── htmlcov/
 │
-├── main.py
 ├── requirements.txt
-├── env.example
-├── .gitignore
-└── README.md
+├── .env.example
+├── README.md
+└── .gitignore
 ```
 
 ---
 
-## Installation
+# Installation
 
 Clone the repository:
 
 ```bash
 git clone https://github.com/MoSaZo/M_Project.git
+
 cd M_Project
 ```
 
-Create and activate a virtual environment:
+Create a virtual environment.
 
-### Windows
+Windows:
 
 ```powershell
 python -m venv .venv
+
 .venv\Scripts\activate
 ```
 
-### Linux / macOS
+Linux/macOS:
 
 ```bash
 python3 -m venv .venv
+
 source .venv/bin/activate
 ```
 
-Install the required dependencies:
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -138,162 +181,160 @@ pip install -r requirements.txt
 
 ---
 
-## Environment Configuration
+# Environment Variables
 
-The educational email feature uses SMTP configuration through environment variables.
-
-Create a `.env` file based on `env.example`.
+Create a `.env` file from `.env.example`.
 
 Example:
 
 ```env
 SMTP_HOST=smtp.example.com
 SMTP_PORT=587
-SMTP_USERNAME=your_username
-SMTP_PASSWORD=your_password
-SMTP_FROM=your_email@example.com
+SMTP_USERNAME=username
+SMTP_PASSWORD=password
+SMTP_FROM=noreply@example.com
 SMTP_USE_TLS=true
 ```
 
-**Do not commit real passwords, API keys, tokens, or other credentials to GitHub.**
+Never commit credentials or API keys to the repository.
 
 ---
 
-## Running the Application
-
-Start the FastAPI development server:
+# Running the Application
 
 ```bash
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
-The application will be available at:
+Default server:
 
-```text
+```
 http://127.0.0.1:8000
 ```
 
-Open the address in a browser to use the web interface.
-
 ---
 
-## API Endpoints
+# API Documentation
 
-| Method | Endpoint                | Description                                  |
-| ------ | ----------------------- | -------------------------------------------- |
-| GET    | `/`                     | Web application homepage                     |
-| POST   | `/analyze`              | Analyze a URL for phishing indicators        |
-| POST   | `/send-awareness-email` | Send an educational phishing awareness email |
+Swagger:
 
----
-
-## API Documentation
-
-After starting the server, FastAPI automatically provides interactive API documentation.
-
-### Swagger UI
-
-```text
+```
 http://127.0.0.1:8000/docs
 ```
 
-### ReDoc
+ReDoc:
 
-```text
+```
 http://127.0.0.1:8000/redoc
 ```
 
 ---
 
-## Risk Scoring
+# Running Tests
 
-The application calculates a phishing risk score based on detected URL indicators.
+Run all tests:
 
-The final score is normalized to a maximum of 100.
+```bash
+pytest
+```
 
-|  Score | Risk Level |
-| -----: | ---------- |
-|   0–19 | Safe       |
-|  20–49 | Suspicious |
-| 50–100 | High Risk  |
+Verbose output:
 
-Individual indicators are also assigned a severity level:
+```bash
+pytest -v
+```
 
-| Indicator Score | Severity |
-| --------------: | -------- |
-|             0–7 | Low      |
-|            8–14 | Medium   |
-|             15+ | High     |
+Generate coverage:
 
-The final classification is intended as an educational risk assessment and should not be considered a definitive determination that a URL is malicious.
+```bash
+pytest --cov=app --cov-report=html --cov-report=term-missing
+```
 
 ---
 
-## Awareness Email
+# Test Statistics
 
-The application includes an educational email feature for phishing awareness.
+Current project status:
 
-The email functionality uses SMTP and requires valid SMTP configuration through environment variables.
-
-This feature is intended for **legitimate security awareness and educational purposes**.
-
----
-
-## Security Considerations
-
-This project is designed as an educational phishing-awareness and URL-analysis application.
-
-The URL analyzer uses heuristic indicators and does not guarantee that a URL is safe or malicious.
-
-For production-grade threat intelligence, additional external reputation and security services would be required.
-
-Never store sensitive credentials directly in source code or commit them to the repository.
+* **94 automated tests**
+* **94 passing**
+* **79% total code coverage**
+* Core analyzer coverage up to **100%**
+* Risk engine coverage **100%**
+* Indicators coverage **97%**
+* Compound rules coverage **94%**
 
 ---
 
-## Future Improvements
+# Example Response
 
-The following features are planned improvements and are **not currently implemented**:
-
-* Database integration
-* URL scan history
-* Analytics dashboard
-* User authentication and authorization
-* WHOIS information lookup
-* SSL/TLS certificate inspection
-* VirusTotal API integration
-* Google Safe Browsing API integration
-* DNS information lookup
-* URL reputation services
-* Reporting and export functionality
-* Unit and integration tests
-* Docker support
-* GitHub Actions / CI/CD
-* Improved logging and monitoring
+```json
+{
+  "risk_score": 52,
+  "risk_level": "High Risk",
+  "ml_prediction": "phishing",
+  "ml_probability": 0.91,
+  "reasons": [
+    "Trusted-domain impersonation detected.",
+    "Multiple phishing keywords detected."
+  ]
+}
+```
 
 ---
 
-## Project Goals
+# Screenshots
 
-The main goals of this project are:
+The following screenshots can be added:
 
-1. Demonstrate URL analysis techniques.
-2. Identify common phishing indicators.
-3. Provide an understandable risk score.
-4. Educate users about phishing threats.
-5. Provide a foundation for developing a more comprehensive phishing intelligence platform.
-
----
-
-## License
-
-MIT License
+* Home page
+* URL analysis
+* Swagger UI
+* ReDoc
+* PDF report
+* Coverage report
 
 ---
 
-## Author
+# Security Notice
+
+This project is intended for educational purposes and phishing awareness.
+
+The analysis combines heuristic rules and machine learning, but no automated system can guarantee that a URL is completely safe or malicious.
+
+For production deployments, additional threat intelligence services (such as Google Safe Browsing or VirusTotal) are recommended.
+
+---
+
+# Future Improvements
+
+Planned enhancements include:
+
+* Docker deployment
+* Docker Compose
+* PostgreSQL support
+* Redis caching
+* JWT authentication
+* CI/CD with GitHub Actions
+* VirusTotal integration
+* Google Safe Browsing integration
+* WHOIS lookup
+* SSL certificate inspection
+* User dashboard
+* Multi-user support
+
+---
+
+# License
+
+This project is released under the MIT License.
+
+---
+
+# Author
 
 **MoSaZo**
 
 GitHub:
+
 https://github.com/MoSaZo

@@ -1,5 +1,5 @@
 """
-Train a baseline phishing URL classification model.
+Train a phishing URL classification model.
 """
 
 from pathlib import Path
@@ -15,16 +15,16 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 
-from models.features import FEATURE_NAMES
+from models.features import MODEL_FEATURE_NAMES
 from models.features import extract_url_features
 
 
 DATASET_PATH = Path(
-    "evaluation/PhiUSIIL_Phishing_URL_Dataset.csv",
+    "evaluation/PhiUSIIL_Phishing_URL_Dataset.csv"
 )
 
 MODEL_PATH = Path(
-    "models/phishing_url_model.joblib",
+    "models/phishing_url_model.joblib"
 )
 
 
@@ -43,21 +43,19 @@ def main() -> None:
     print(f"Rows: {len(df):,}")
 
     # PhiUSIIL:
-    # 1 = legitimate
-    # 0 = phishing
+    # label 1 = legitimate
+    # label 0 = phishing
     #
     # Our target:
-    # 1 = phishing
     # 0 = legitimate
+    # 1 = phishing
     df["target"] = (
         df["label"] == 0
     ).astype(int)
 
     print("\nClass distribution:")
     print(
-        df["target"].value_counts(
-            normalize=False,
-        )
+        df["target"].value_counts()
     )
 
     print("\nExtracting URL features...")
@@ -69,38 +67,45 @@ def main() -> None:
 
     X = pd.DataFrame(
         feature_rows,
-        columns=FEATURE_NAMES,
+        columns=MODEL_FEATURE_NAMES,
     )
 
     y = df["target"]
 
     print(
-        f"Feature matrix: {X.shape[0]:,} "
-        f"rows x {X.shape[1]} features"
+        f"Feature matrix: "
+        f"{X.shape[0]:,} rows x "
+        f"{X.shape[1]} features"
     )
 
     print("\nSplitting dataset...")
 
-    X_train, X_test, y_train, y_test = (
-        train_test_split(
-            X,
-            y,
-            test_size=0.20,
-            random_state=42,
-            stratify=y,
-        )
+    (
+        X_train,
+        X_test,
+        y_train,
+        y_test,
+    ) = train_test_split(
+        X,
+        y,
+        test_size=0.20,
+        random_state=42,
+        stratify=y,
     )
 
     print(
-        f"Train: {len(X_train):,} "
+        f"Train: {len(X_train):,}"
+    )
+
+    print(
         f"Test: {len(X_test):,}"
     )
 
     print("\nTraining Random Forest...")
 
     model = RandomForestClassifier(
-        n_estimators=200,
-        max_depth=16,
+        n_estimators=300,
+        max_depth=18,
         min_samples_leaf=2,
         random_state=42,
         n_jobs=-1,
@@ -114,13 +119,18 @@ def main() -> None:
 
     print("\nEvaluating...")
 
-    predictions = model.predict(X_test)
+    predictions = model.predict(
+        X_test
+    )
 
-    probabilities = model.predict_proba(
-        X_test,
-    )[:, 1]
+    probabilities = (
+        model.predict_proba(
+            X_test
+        )[:, 1]
+    )
 
     print("\nClassification report:")
+
     print(
         classification_report(
             y_test,
@@ -134,6 +144,7 @@ def main() -> None:
     )
 
     print("Confusion matrix:")
+
     print(
         confusion_matrix(
             y_test,
@@ -142,17 +153,23 @@ def main() -> None:
     )
 
     print("\nROC-AUC:")
+
+    roc_auc = roc_auc_score(
+        y_test,
+        probabilities,
+    )
+
     print(
-        f"{roc_auc_score(y_test, probabilities):.4f}"
+        f"{roc_auc:.4f}"
     )
 
     print("\nFeature importance:")
 
     importance = pd.Series(
         model.feature_importances_,
-        index=FEATURE_NAMES,
+        index=MODEL_FEATURE_NAMES,
     ).sort_values(
-        ascending=False,
+        ascending=False
     )
 
     print(
@@ -167,13 +184,14 @@ def main() -> None:
     joblib.dump(
         {
             "model": model,
-            "features": FEATURE_NAMES,
+            "features": MODEL_FEATURE_NAMES,
         },
         MODEL_PATH,
     )
 
     print(
-        f"\nModel saved to: {MODEL_PATH}"
+        f"\nModel saved to: "
+        f"{MODEL_PATH}"
     )
 
 
