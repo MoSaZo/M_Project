@@ -21,6 +21,7 @@ from app.analyzer.constants import REDIRECT_PARAMETERS
 from app.analyzer.constants import SUSPICIOUS_CHARACTERS
 from app.analyzer.constants import SUSPICIOUS_KEYWORDS
 
+from app.analyzer.constants import TRUSTED_DOMAINS
 
 def _indicator(
     score: int,
@@ -212,6 +213,75 @@ def check_multiple_hyphens(
             ),
         )
     ]
+
+def check_trusted_domain_impersonation(
+    parsed: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """
+    Detect trusted-domain names used inside the subdomain
+    of a different registered domain.
+
+    Examples:
+
+        github.com
+        www.github.com
+
+    are legitimate.
+
+    But:
+
+        github.com.evil.com
+        login.github.com.evil.com
+
+    indicate possible trusted-brand impersonation.
+    """
+
+    registered_domain = (
+        parsed["registered_domain"]
+        .lower()
+        .rstrip(".")
+    )
+
+    subdomain = (
+        parsed.get("subdomain", "")
+        .lower()
+        .strip(".")
+    )
+
+    if not subdomain:
+        return []
+
+    for trusted_domain in TRUSTED_DOMAINS:
+        trusted_domain = (
+            trusted_domain.lower()
+            .rstrip(".")
+        )
+
+        # The actual registered domain is already trusted.
+        if registered_domain == trusted_domain:
+            continue
+
+        # Match the trusted domain as a complete suffix
+        # inside the subdomain, not as an arbitrary substring.
+        if (
+            subdomain == trusted_domain
+            or subdomain.endswith(
+                "." + trusted_domain
+            )
+        ):
+            return [
+                _indicator(
+                    score=25,
+                    severity="High",
+                    reason=(
+                        "Possible trusted-domain impersonation: "
+                        f"'{trusted_domain}' appears in the "
+                        "subdomain of another domain."
+                    ),
+                )
+            ]
+
+    return []
 
 
 def check_long_path(
@@ -497,6 +567,7 @@ def collect_indicators(
         check_subdomains,
         check_suspicious_characters,
         check_multiple_hyphens,
+        check_trusted_domain_impersonation,
         check_long_path,
         check_http,
         check_keywords,

@@ -2,17 +2,33 @@
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyd
 
-# Virtual environment
+# Virtual environments
 .venv/
 venv/
+env/
 
-# PyCharm
-.idea/deployment.xml
-.idea/webServers.xml
-
+# Environment / secrets
 .env
+.env.*
+!.env.example
+
+# Test / coverage
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# IDE
+.idea/
+.vscode/
+.pycharm/
+
+# Database
 *.db
+*.sqlite
+*.sqlite3
 
 # ML datasets
 evaluation/PhiUSIIL_Phishing_URL_Dataset.csv

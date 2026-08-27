@@ -71,7 +71,7 @@ class ReportService:
         """
 
         lines = [
-            "URL Security Report",
+            "URL SECURITY REPORT",
             "=" * 50,
             "",
             f"URL: {scan.url}",
