@@ -68,3 +68,41 @@ def test_history_contains_created_scan(
     assert data["hostname"] == "www.google.com"
     assert data["risk_score"] == 0
     assert data["risk_level"] == "Safe"
+
+def test_duplicate_url_is_not_saved_twice(
+    client: TestClient,
+) -> None:
+    """
+    Analyzing the same URL twice should not create duplicate
+    history records.
+    """
+
+    url = "https://www.google.com"
+
+    first_response = client.post(
+        "/api/analyze",
+        json={"url": url},
+    )
+
+    assert first_response.status_code == 200
+
+    second_response = client.post(
+        "/api/analyze",
+        json={"url": url},
+    )
+
+    assert second_response.status_code == 200
+
+    response = client.get("/api/history")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    matching_records = [
+        item
+        for item in data
+        if item["url"] == url
+    ]
+
+    assert len(matching_records) == 1

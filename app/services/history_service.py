@@ -7,6 +7,7 @@ Handles persistence and retrieval of URL analysis history.
 from typing import Any
 
 from sqlalchemy import desc
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database.models import URLScan
@@ -110,19 +111,35 @@ def get_history(
     """
     Retrieve recent analysis history.
 
+    Only the latest analysis for each URL is returned.
+    Older database records are preserved.
+
     Args:
         db:
             Active SQLAlchemy session.
 
         limit:
-            Maximum number of records.
+            Maximum number of unique URLs.
 
     Returns:
-        List of URLScan records.
+        List of latest URLScan records.
     """
+
+    latest_scan_ids = (
+        db.query(
+            URLScan.url,
+            func.max(URLScan.id).label("latest_id"),
+        )
+        .group_by(URLScan.url)
+        .subquery()
+    )
 
     return (
         db.query(URLScan)
+        .join(
+            latest_scan_ids,
+            URLScan.id == latest_scan_ids.c.latest_id,
+        )
         .order_by(
             desc(URLScan.created_at),
         )
