@@ -2,7 +2,11 @@
 Tests for API endpoints.
 """
 
+from unittest.mock import patch
+
 from fastapi.testclient import TestClient
+
+from app.main import app
 
 
 def test_analyze_google_url(
@@ -51,3 +55,46 @@ def test_analyze_empty_url(
     assert data["detail"] == "URL cannot be empty."
 
     assert response.status_code == 400
+
+def test_root_serves_frontend(
+    client: TestClient,
+) -> None:
+    """
+    Root endpoint should serve the frontend index page.
+    """
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith(
+        "text/html",
+    )
+
+
+def test_health_check(
+    client: TestClient,
+) -> None:
+    """
+    Health endpoint should report the application as healthy.
+    """
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "ok",
+    }
+
+def test_lifespan_creates_database_tables() -> None:
+    """
+    Application startup should create database tables.
+    """
+
+    with patch(
+        "app.main.create_tables",
+    ) as mock_create_tables:
+
+        with TestClient(app):
+            pass
+
+    mock_create_tables.assert_called_once()

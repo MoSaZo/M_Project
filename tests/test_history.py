@@ -106,3 +106,53 @@ def test_duplicate_url_is_not_saved_twice(
     ]
 
     assert len(matching_records) == 1
+
+def test_history_rejects_zero_limit(
+    client: TestClient,
+) -> None:
+    """
+    History endpoint should reject a zero limit.
+    """
+
+    response = client.get(
+        "/api/history?limit=0",
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "Limit must be greater than 0.",
+    }
+
+
+def test_history_rejects_limit_above_100(
+    client: TestClient,
+) -> None:
+    """
+    History endpoint should reject limits above 100.
+    """
+
+    response = client.get(
+        "/api/history?limit=101",
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "Limit cannot exceed 100.",
+    }
+
+
+def test_history_item_rejects_invalid_scan_id(
+    client: TestClient,
+) -> None:
+    """
+    History item endpoint should reject a non-positive scan ID.
+    """
+
+    response = client.get(
+        "/api/history/0",
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "Scan ID must be greater than 0.",
+    }

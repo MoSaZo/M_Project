@@ -41,7 +41,9 @@ def main() -> None:
         usecols=["URL", "label"],
     )
 
-    print(f"Rows: {len(df):,}")
+    print(
+        f"Rows: {len(df):,}"
+    )
 
     # PhiUSIIL:
     # label 1 = legitimate
@@ -50,11 +52,13 @@ def main() -> None:
     # Our target:
     # 0 = legitimate
     # 1 = phishing
+
     df["target"] = (
         df["label"] == 0
     ).astype(int)
 
     print("\nClass distribution:")
+
     print(
         df["target"].value_counts()
     )
@@ -124,7 +128,19 @@ def main() -> None:
         X_test
     )
 
-    probabilities = np.asarray(model.predict_proba(X_test))[:, 1]
+    # Convert to NumPy array first.
+    # This also makes the code compatible
+    # with mocked list output in tests.
+    probability_matrix = np.asarray(
+        model.predict_proba(
+            X_test
+        )
+    )
+
+    probabilities = probability_matrix[
+        :,
+        1,
+    ]
 
     print("\nClassification report:")
 

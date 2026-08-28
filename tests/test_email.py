@@ -61,3 +61,31 @@ def test_send_awareness_email_invalid_recipient(
     )
 
     assert response.status_code == 422
+
+
+def test_send_awareness_email_failure(
+    client: TestClient,
+) -> None:
+    """
+    Email sending failure should return HTTP 500.
+    """
+
+    with patch(
+        "app.api.email.send_awareness_email",
+        side_effect=RuntimeError(
+            "SMTP connection failed",
+        ),
+    ):
+        response = client.post(
+            "/api/email/send-awareness",
+            json={
+                "recipient": "test@example.com",
+                "subject": "Test",
+                "body": "Test body.",
+            },
+        )
+
+    assert response.status_code == 500
+    assert response.json() == {
+        "detail": "SMTP connection failed",
+    }
