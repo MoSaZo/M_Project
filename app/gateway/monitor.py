@@ -4,6 +4,8 @@ Live DNS monitoring through TShark/PyShark.
 
 import pyshark
 
+from app.database.database import SessionLocal
+from app.database.gateway_repository import GatewayEventRepository
 from app.gateway.analyzer import GatewayAnalyzer
 from app.gateway.collector import DNSCollector
 from app.gateway.config import (
@@ -28,10 +30,44 @@ class DNSMonitor:
         self.collector = DNSCollector()
         self.analyzer = GatewayAnalyzer()
 
+        self.analyzer = GatewayAnalyzer()
+        self.repository_factory = GatewayEventRepository
+
     def process_record(self, record):
+        """
+        Analyze and persist a DNS record.
+        """
+
         self.collector.add(record)
 
-        return self.analyzer.analyze(record)
+        result = self.analyzer.analyze(
+            record,
+        )
+
+        db = SessionLocal()
+
+        try:
+            repository_factory = getattr(
+                self,
+                "repository_factory",
+                GatewayEventRepository,
+            )
+
+            repository = repository_factory(
+                db,
+            )
+
+            repository.create(
+                record,
+                result,
+            )
+
+        finally:
+            db.close()
+
+        write(record)
+
+        return result
 
     def start(self):
         print("=" * 60)
@@ -55,14 +91,13 @@ class DNSMonitor:
                     record,
                 )
 
-                write(record)
-
                 if record.response:
                     print(
                         f"[{record.timestamp:%H:%M:%S}] "
-                        f"{result.domain:<40} "
-                        f"{result.prediction:<12} "
-                        f"{result.score:.2f}"
+                        f"{record.query:<40} "
+                        f"{record.answer} "
+                        f"| {result.prediction} "
+                        f"({result.score:.4f})"
                     )
 
             except Exception as e:

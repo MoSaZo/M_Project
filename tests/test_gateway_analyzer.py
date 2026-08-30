@@ -1,8 +1,8 @@
+from datetime import datetime
+
 from app.gateway.analyzer import GatewayAnalyzer
 from app.gateway.models import DNSRecord
 from app.gateway.results import AnalysisResult
-
-from datetime import datetime
 
 
 def make_record(query="google.com"):
@@ -17,7 +17,7 @@ def make_record(query="google.com"):
     )
 
 
-def test_analyzer_returns_dictionary():
+def test_analyzer_returns_result():
     analyzer = GatewayAnalyzer()
 
     result = analyzer.analyze(make_record())
@@ -39,6 +39,7 @@ def test_result_contains_score():
     result = analyzer.analyze(make_record())
 
     assert isinstance(result.score, float)
+    assert 0.0 <= result.score <= 1.0
 
 
 def test_result_contains_prediction():
@@ -46,4 +47,7 @@ def test_result_contains_prediction():
 
     result = analyzer.analyze(make_record())
 
-    assert isinstance(result.prediction, str)
+    assert result.prediction in {
+        "phishing",
+        "legitimate",
+    }

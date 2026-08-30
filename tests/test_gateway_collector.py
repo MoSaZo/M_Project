@@ -74,3 +74,9 @@ def test_size():
     collector.add(make_record("c"))
 
     assert collector.size() == 3
+
+
+def test_pop_empty_returns_none():
+    collector = DNSCollector()
+
+    assert collector.pop() is None
