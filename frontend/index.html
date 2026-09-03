@@ -173,8 +173,12 @@
                 >
 
                     <span class="card-label">
-                        RISK SCORE
+                        RULE-BASED RISK SCORE
                     </span>
+
+                    <p class="risk-note">
+                        Calculated from explainable rule-based indicators.
+                    </p>
 
                     <div class="risk-score">
                         <span id="risk-score">0</span>
@@ -201,7 +205,7 @@
                 <div class="info-card">
 
                     <span class="card-label">
-                        ML PREDICTION
+                        MACHINE LEARNING ASSESSMENT
                     </span>
 
                     <div
@@ -225,6 +229,10 @@
                         <span>
                             Phishing probability
                         </span>
+
+                        <p class="ml-note">
+                            Independent machine-learning assessment.
+                        </p>
 
                         <strong id="ml-probability">
                             0%
@@ -392,6 +400,160 @@
 
         </section>
 
+<!-- ========================= -->
+<!-- Gateway Dashboard -->
+<!-- ========================= -->
+
+<section class="gateway-section">
+
+    <div class="section-heading">
+
+        <div>
+
+            <span class="section-label">
+                LIVE GATEWAY
+            </span>
+
+            <h3>
+                DNS Monitoring
+            </h3>
+
+        </div>
+
+    </div>
+
+
+    <div class="gateway-stats">
+
+        <div class="gateway-card">
+
+            <span>Total Events</span>
+
+            <h2 id="gateway-total">0</h2>
+
+        </div>
+
+        <div class="gateway-card">
+
+            <span>Phishing</span>
+
+            <h2 id="gateway-phishing">0</h2>
+
+        </div>
+
+        <div class="gateway-card">
+
+            <span>Legitimate</span>
+
+            <h2 id="gateway-legitimate">0</h2>
+
+        </div>
+
+        <div class="gateway-card">
+
+            <span>Highest Score</span>
+
+            <h2 id="gateway-score">0</h2>
+
+        </div>
+
+    </div>
+
+
+    <div class="gateway-events">
+
+        <table>
+
+            <thead>
+
+            <tr>
+
+                <th>Time</th>
+
+                <th>Domain</th>
+
+                <th>Prediction</th>
+
+                <th>Score</th>
+
+            </tr>
+
+            </thead>
+
+            <tbody id="gateway-events-body">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+
+<section class="gateway-section">
+
+    <div class="section-heading">
+        <div>
+            <span class="section-label">
+                LIVE DNS GATEWAY
+            </span>
+
+            <h3>
+                Gateway Monitor
+            </h3>
+        </div>
+    </div>
+
+    <div class="gateway-cards">
+
+        <div class="gateway-card">
+            <span>Total</span>
+            <h2 id="gateway-total">0</h2>
+        </div>
+
+        <div class="gateway-card">
+            <span>Phishing</span>
+            <h2 id="gateway-phishing">0</h2>
+        </div>
+
+        <div class="gateway-card">
+            <span>Legitimate</span>
+            <h2 id="gateway-legitimate">0</h2>
+        </div>
+
+        <div class="gateway-card">
+            <span>Highest Score</span>
+            <h2 id="gateway-score">0</h2>
+        </div>
+
+    </div>
+
+    <table class="gateway-table">
+
+        <thead>
+
+            <tr>
+
+                <th>Time</th>
+
+                <th>Domain</th>
+
+                <th>Prediction</th>
+
+                <th>Score</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="gateway-events-body">
+
+        </tbody>
+
+    </table>
+
+</section>
 
         <!-- History -->
 

@@ -112,13 +112,45 @@ function getRiskClass(score) {
 }
 
 
-function getRiskSummary(score) {
+function getRiskSummary(
+    score,
+    mlPrediction,
+    mlProbability,
+) {
+
+    if (
+        score < 20 &&
+        mlPrediction === "phishing" &&
+        mlProbability >= 0.90
+    ) {
+
+        return (
+            "Rule-based analysis found few or no suspicious indicators. "
+            + "However, the machine-learning model predicts this URL "
+            + "may be phishing with high confidence."
+        );
+    }
+
+
+    if (
+        score >= 20 &&
+        score < 50 &&
+        mlPrediction === "phishing" &&
+        mlProbability >= 0.90
+    ) {
+
+        return (
+            "Rule-based analysis detected suspicious indicators. "
+            + "The machine-learning model also predicts phishing "
+            + "with high confidence."
+        );
+    }
+
 
     if (score < 20) {
 
         return (
-            "This URL shows few or no "
-            + "suspicious indicators."
+            "Rule-based analysis found few or no suspicious indicators."
         );
     }
 
@@ -126,23 +158,15 @@ function getRiskSummary(score) {
     if (score < 50) {
 
         return (
-            "This URL contains suspicious "
-            + "indicators. Review it carefully "
-            + "before entering sensitive "
-            + "information."
+            "Rule-based analysis detected several suspicious indicators."
         );
     }
 
 
     return (
-        "This URL contains multiple "
-        + "high-risk phishing indicators. "
-        + "Avoid entering sensitive "
-        + "information."
+        "Rule-based analysis detected multiple high-risk phishing indicators."
     );
 }
-
-
 /* =========================
    Risk Theme
 ========================= */
@@ -398,28 +422,39 @@ function renderResult(data) {
     ).textContent =
         score;
 
+    const probability =
+    Number(data.ml_probability) || 0;
 
+const riskLevelElement =
     document.getElementById(
         "risk-level",
-    ).textContent =
-        data.risk_level || "Unknown";
+    );
 
+riskLevelElement.textContent =
+    data.risk_level || "Unknown";
 
-    document.getElementById(
-        "risk-summary",
-    ).textContent =
-        getRiskSummary(score);
+riskLevelElement.title =
+    (
+        score < 20 &&
+        data.ml_prediction === "phishing" &&
+        probability >= 0.90
+    )
+        ? "Risk level increased due to a high-confidence machine-learning prediction."
+        : "";
 
+document.getElementById(
+    "risk-summary",
+).textContent =
+    getRiskSummary(
+        score,
+        data.ml_prediction,
+        probability,
+    );
 
-    document.getElementById(
-        "ml-prediction",
-    ).textContent =
-        data.ml_prediction || "Unknown";
-
-
-    const probability =
-        Number(data.ml_probability) || 0;
-
+document.getElementById(
+    "ml-prediction",
+).textContent =
+    data.ml_prediction || "Unknown";
 
     document.getElementById(
         "ml-probability",
@@ -704,6 +739,7 @@ document
             );
         },
     );
+
 
 
 /* =========================
@@ -1052,3 +1088,75 @@ emailForm.addEventListener(
 
 
 loadHistory();
+
+async function loadGatewayStats(){
+
+    const response = await fetch("/api/gateway/stats");
+
+    const data = await response.json();
+
+    document.getElementById("gateway-total").textContent =
+        data.total;
+
+    document.getElementById("gateway-phishing").textContent =
+        data.phishing;
+
+    document.getElementById("gateway-legitimate").textContent =
+        data.legitimate;
+
+    document.getElementById("gateway-score").textContent =
+        Number(data.highest_score ?? 0).toFixed(2);
+
+}
+
+
+async function loadGatewayEvents(){
+
+    const response =
+        await fetch("/api/gateway/events?limit=15");
+
+    const data =
+        await response.json();
+
+    const body =
+        document.getElementById(
+            "gateway-events-body"
+        );
+
+    body.innerHTML="";
+
+    data.items.forEach(event=>{
+
+        body.innerHTML += `
+            <tr>
+
+                <td>${new Date(event.timestamp)
+                    .toLocaleTimeString()}</td>
+
+                <td>${event.domain}</td>
+
+                <td>${event.prediction}</td>
+
+                <td>${event.score.toFixed(3)}</td>
+
+            </tr>
+        `;
+
+    });
+
+}
+
+async function refreshGateway(){
+
+    await loadGatewayStats();
+
+    await loadGatewayEvents();
+
+}
+
+refreshGateway();
+
+setInterval(
+    refreshGateway,
+    3000
+);
