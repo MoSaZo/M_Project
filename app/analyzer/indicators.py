@@ -453,6 +453,15 @@ def check_keywords(
     hostname = parsed["hostname"].lower()
     decoded_path = parsed["decoded_path"].lower()
     decoded_query = parsed["decoded_query"].lower()
+    
+    registered_domain = (
+        parsed["registered_domain"]
+        .lower()
+        .rstrip(".")
+    )
+
+    if registered_domain in TRUSTED_DOMAINS:
+        return []
 
     keyword_locations: dict[str, list[str]] = {
         "hostname": [],
@@ -497,6 +506,15 @@ def check_keywords(
         for location, words in keyword_locations.items()
         if words
     ]
+
+    registered_domain = (
+        parsed["registered_domain"]
+        .lower()
+        .rstrip(".")
+    )
+
+    if registered_domain in TRUSTED_DOMAINS:
+        return []
 
     return [
         _indicator(

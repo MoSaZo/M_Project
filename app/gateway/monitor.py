@@ -6,6 +6,7 @@ interface, analyzes DNS queries, persists the result, and
 supports graceful shutdown.
 """
 
+import asyncio
 import threading
 
 import pyshark
@@ -23,7 +24,6 @@ from app.gateway.filters import should_filter
 from app.gateway.logger import write
 from app.gateway.parser import parse_packet
 
-from app.database.gateway_repository import GatewayEventRepository
 
 class DNSMonitor:
     """
@@ -31,11 +31,7 @@ class DNSMonitor:
     """
 
     def __init__(self) -> None:
-        self.capture = pyshark.LiveCapture(
-            interface=INTERFACE,
-            tshark_path=TSHARK_PATH,
-            display_filter=DISPLAY_FILTER,
-        )
+        self.capture = None
 
         self.collector = DNSCollector()
         self.analyzer = GatewayAnalyzer()
@@ -43,6 +39,8 @@ class DNSMonitor:
 
         self._stop_event = threading.Event()
         self._running = False
+        self._capture_started = False
+        self._event_loop = None
 
     def process_record(self, record):
         """
@@ -61,6 +59,7 @@ class DNSMonitor:
                 if hasattr(self, "repository_factory")
                 else GatewayEventRepository(db)
             )
+
             repository.create(
                 record,
                 result,
@@ -88,16 +87,29 @@ class DNSMonitor:
 
         self._running = True
         self._stop_event.clear()
+        self._capture_started = False
 
-        print("=" * 60)
-        print("PhishGuard Gateway DNS Monitor")
-        print("=" * 60)
-        print(f"Interface : {INTERFACE}")
-        print(f"Filter    : {DISPLAY_FILTER}")
-        print("Status    : Listening...")
-        print()
+        self._event_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self._event_loop)
 
         try:
+            self.capture = pyshark.LiveCapture(
+                interface=INTERFACE,
+                tshark_path=TSHARK_PATH,
+                display_filter=DISPLAY_FILTER,
+                eventloop=self._event_loop,
+            )
+
+            self._capture_started = True
+
+            print("=" * 60)
+            print("PhishGuard Gateway DNS Monitor")
+            print("=" * 60)
+            print(f"Interface : {INTERFACE}")
+            print(f"Filter    : {DISPLAY_FILTER}")
+            print("Status    : Listening...")
+            print()
+
             for packet in self.capture.sniff_continuously():
 
                 if self._stop_event.is_set():
@@ -135,6 +147,26 @@ class DNSMonitor:
                 )
 
         finally:
+            if self.capture is not None and self._capture_started:
+                try:
+                    self._event_loop.run_until_complete(
+                        self.capture.close_async()
+                    )
+                except Exception as exc:
+                    print(
+                        f"[Gateway] Capture close error: {exc}"
+                    )
+
+            self._capture_started = False
+            self.capture = None
+
+            if self._event_loop is not None:
+                try:
+                    self._event_loop.close()
+                except Exception:
+                    pass
+
+            self._event_loop = None
             self._running = False
 
     def stop(self) -> None:
@@ -149,12 +181,23 @@ class DNSMonitor:
 
         self._stop_event.set()
 
-        try:
-            self.capture.close()
-        except Exception:
-            pass
+        if (
+            self._capture_started
+            and self.capture is not None
+            and self._event_loop is not None
+        ):
+            try:
+                future = asyncio.run_coroutine_threadsafe(
+                    self.capture.close_async(),
+                    self._event_loop,
+                )
 
-        self._running = False
+                future.result(timeout=5)
+
+            except Exception as exc:
+                print(
+                    f"[Gateway] Capture close error: {exc}"
+                )
 
         print("[Gateway] DNS monitor stopped.")
 
