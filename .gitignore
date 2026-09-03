@@ -32,7 +32,14 @@ htmlcov/
 
 # ML datasets
 evaluation/PhiUSIIL_Phishing_URL_Dataset.csv
+evaluation/PhiUSIIL_sample_10000.csv
 
 # Trained models
 models/*.pkl
 models/*.joblib
+
+# Logs
+logs/
+
+# Personal files
+project_core.txt

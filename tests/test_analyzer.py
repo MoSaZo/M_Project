@@ -5,7 +5,7 @@ Tests for URL analyzer.
 import pytest
 
 from app.analyzer.analyzer import analyze_url
-
+from app.analyzer.risk_engine import calculate_final_risk_level
 
 def test_google_url_is_safe() -> None:
     """
@@ -325,3 +325,33 @@ def test_nested_trusted_domain_overrides_ml_false_negative() -> None:
 
     assert result["risk_level"] == "Suspicious"
     assert result["risk_score"] == 35
+
+
+def test_medium_ml_confidence_raises_safe_to_suspicious() -> None:
+    """
+    A phishing ML prediction with probability >= 0.70
+    should raise a Safe result to Suspicious.
+    """
+
+    result = calculate_final_risk_level(
+        risk_score=0,
+        ml_prediction="phishing",
+        ml_probability=0.70,
+    )
+
+    assert result == "Suspicious"
+
+
+def test_medium_ml_confidence_does_not_raise_suspicious_to_high_risk() -> None:
+    """
+    A phishing ML prediction below the high-confidence
+    threshold should not raise Suspicious to High Risk.
+    """
+
+    result = calculate_final_risk_level(
+        risk_score=35,
+        ml_prediction="phishing",
+        ml_probability=0.70,
+    )
+
+    assert result == "Suspicious"

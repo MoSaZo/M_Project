@@ -13,8 +13,8 @@ into account.
 from typing import Any
 
 
+ML_SAFE_CONFIDENCE_THRESHOLD = 0.70
 ML_HIGH_CONFIDENCE_THRESHOLD = 0.90
-ML_MEDIUM_CONFIDENCE_THRESHOLD = 0.70
 
 
 def get_severity(score: int) -> str:
@@ -41,9 +41,12 @@ def calculate_final_risk_level(
     and optional machine-learning prediction.
 
     Rule-based thresholds remain the primary scoring system.
-    A high-confidence ML phishing prediction can raise a
-    Safe result to Suspicious and a Suspicious result to
-    High Risk.
+
+    A phishing prediction with probability >= 0.70 can
+    raise a Safe result to Suspicious.
+
+    A phishing prediction with probability >= 0.90 can
+    raise a Suspicious result to High Risk.
     """
 
     if risk_score < 20:
@@ -57,12 +60,17 @@ def calculate_final_risk_level(
         ml_prediction == "phishing"
         and ml_probability is not None
     ):
-        if ml_probability >= ML_HIGH_CONFIDENCE_THRESHOLD:
-            if risk_level == "Safe":
-                return "Suspicious"
+        if (
+            risk_level == "Safe"
+            and ml_probability >= ML_SAFE_CONFIDENCE_THRESHOLD
+        ):
+            return "Suspicious"
 
-            if risk_level == "Suspicious":
-                return "High Risk"
+        if (
+            risk_level == "Suspicious"
+            and ml_probability >= ML_HIGH_CONFIDENCE_THRESHOLD
+        ):
+            return "High Risk"
 
     return risk_level
 
