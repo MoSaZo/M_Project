@@ -22,6 +22,14 @@ from app.analyzer.constants import SUSPICIOUS_CHARACTERS
 from app.analyzer.constants import SUSPICIOUS_KEYWORDS
 
 from app.analyzer.constants import TRUSTED_DOMAINS
+from app.analyzer.constants import TRUSTED_BRANDS
+from app.analyzer.constants import TYPOSQUATTING_SCORE
+from app.analyzer.constants import (
+    TYPOSQUATTING_MAX_LENGTH_DIFFERENCE,
+)
+from app.analyzer.constants import (
+    TYPOSQUATTING_SIMILARITY_THRESHOLD,
+)
 
 def _indicator(
     score: int,
@@ -283,6 +291,105 @@ def check_trusted_domain_impersonation(
 
     return []
 
+def check_typosquatting(
+    parsed: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """
+    Detect possible typosquatting attacks.
+
+    Compares the registered domain name against a list
+    of trusted brand names using normalized
+    Levenshtein-like similarity from SequenceMatcher.
+
+    Examples:
+
+        google.com
+        g00gle.com
+        gooogle.com
+        goog1e.com
+
+    may indicate an attempt to imitate a trusted brand.
+    """
+
+    from difflib import SequenceMatcher
+
+    registered_domain = (
+        parsed["registered_domain"]
+        .lower()
+        .rstrip(".")
+    )
+
+    if not registered_domain:
+        return []
+
+    # Do not compare a trusted domain with itself.
+    if registered_domain in TRUSTED_DOMAINS:
+        return []
+
+    domain_name = (
+        parsed.get(
+            "domain",
+            "",
+        )
+        .lower()
+        .strip()
+    )
+
+    if not domain_name:
+        return []
+
+    best_brand = None
+    best_domain = None
+    best_similarity = 0.0
+
+    for brand, trusted_domain in TRUSTED_BRANDS.items():
+
+        # Exact brand/domain match is legitimate.
+        if domain_name == brand:
+            continue
+
+        length_difference = abs(
+            len(domain_name) - len(brand)
+        )
+
+        if (
+            length_difference
+            > TYPOSQUATTING_MAX_LENGTH_DIFFERENCE
+        ):
+            continue
+
+        similarity = SequenceMatcher(
+            None,
+            domain_name,
+            brand,
+        ).ratio()
+
+        if similarity > best_similarity:
+            best_similarity = similarity
+            best_brand = brand
+            best_domain = trusted_domain
+
+    if (
+        best_brand is None
+        or best_domain is None
+        or best_similarity
+        < TYPOSQUATTING_SIMILARITY_THRESHOLD
+    ):
+        return []
+
+    return [
+        _indicator(
+            score=TYPOSQUATTING_SCORE,
+            severity="High",
+            reason=(
+                "Possible typosquatting detected: "
+                f"domain '{domain_name}' resembles "
+                f"trusted brand '{best_brand}' "
+                f"({best_domain}) "
+                f"with {best_similarity:.0%} similarity."
+            ),
+        )
+    ]
 
 def check_long_path(
     parsed: dict[str, Any],
@@ -568,6 +675,7 @@ def collect_indicators(
         check_suspicious_characters,
         check_multiple_hyphens,
         check_trusted_domain_impersonation,
+        check_typosquatting,
         check_long_path,
         check_http,
         check_keywords,

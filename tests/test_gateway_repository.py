@@ -101,3 +101,179 @@ def test_repository_event_can_be_queried():
 
     finally:
         db.close()
+
+def make_session():
+    engine = create_engine(
+        "sqlite:///:memory:",
+        future=True,
+    )
+
+    Base.metadata.create_all(
+        bind=engine,
+    )
+
+    SessionLocal = sessionmaker(
+        bind=engine,
+        autoflush=False,
+        autocommit=False,
+        expire_on_commit=False,
+    )
+
+    return SessionLocal()
+
+
+def test_list_events_returns_latest_first():
+    db = make_session()
+
+    try:
+        repository = GatewayEventRepository(db)
+
+        first = make_record()
+        first.query = "first.example.com"
+
+        second = make_record()
+        second.query = "second.example.com"
+
+        repository.create(
+            first,
+            AnalysisResult(
+                domain="first.example.com",
+                score=0.2,
+                prediction="legitimate",
+            ),
+        )
+
+        repository.create(
+            second,
+            AnalysisResult(
+                domain="second.example.com",
+                score=0.9,
+                prediction="phishing",
+            ),
+        )
+
+        events = repository.list_events()
+
+        assert len(events) == 2
+        assert (
+            events[0].domain
+            == "second.example.com"
+        )
+
+    finally:
+        db.close()
+
+
+def test_list_events_filters_prediction():
+    db = make_session()
+
+    try:
+        repository = GatewayEventRepository(db)
+
+        safe = make_record()
+        safe.query = "safe.example.com"
+
+        evil = make_record()
+        evil.query = "evil.example.com"
+
+        repository.create(
+            safe,
+            AnalysisResult(
+                domain="safe.example.com",
+                score=0.1,
+                prediction="legitimate",
+            ),
+        )
+
+        repository.create(
+            evil,
+            AnalysisResult(
+                domain="evil.example.com",
+                score=0.9,
+                prediction="phishing",
+            ),
+        )
+
+        events = repository.list_events(
+            prediction="phishing",
+        )
+
+        assert len(events) == 1
+        assert (
+            events[0].domain
+            == "evil.example.com"
+        )
+
+    finally:
+        db.close()
+
+
+def test_count_events():
+    db = make_session()
+
+    try:
+        repository = GatewayEventRepository(db)
+
+        repository.create(
+            make_record(),
+            AnalysisResult(
+                domain="example.com",
+                score=0.7,
+                prediction="phishing",
+            ),
+        )
+
+        assert repository.count_events() == 1
+
+        assert (
+            repository.count_events(
+                prediction="phishing",
+            )
+            == 1
+        )
+
+        assert (
+            repository.count_events(
+                prediction="legitimate",
+            )
+            == 0
+        )
+
+    finally:
+        db.close()
+
+
+def test_score_statistics():
+    db = make_session()
+
+    try:
+        repository = GatewayEventRepository(db)
+
+        first = make_record()
+
+        second = make_record()
+        second.query = "evil.example.com"
+
+        repository.create(
+            first,
+            AnalysisResult(
+                domain="example.com",
+                score=0.25,
+                prediction="legitimate",
+            ),
+        )
+
+        repository.create(
+            second,
+            AnalysisResult(
+                domain="evil.example.com",
+                score=0.75,
+                prediction="phishing",
+            ),
+        )
+
+        assert repository.average_score() == 0.5
+        assert repository.highest_score() == 0.75
+
+    finally:
+        db.close()

@@ -29,6 +29,10 @@ class GatewayEvent(Base):
         index=True,
     )
 
+    # =========================
+    # DNS observation
+    # =========================
+
     timestamp: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,
@@ -65,6 +69,10 @@ class GatewayEvent(Base):
         nullable=False,
     )
 
+    # =========================
+    # ML analysis
+    # =========================
+
     score: Mapped[float] = mapped_column(
         Float,
         nullable=False,
@@ -73,10 +81,38 @@ class GatewayEvent(Base):
     prediction: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
+        index=True,
     )
+
+    probability: Mapped[float] = mapped_column(
+        Float,
+        nullable=False,
+        default=0.0,
+    )
+
+    # =========================
+    # Final risk assessment
+    # =========================
+
+    risk_score: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=0,
+    )
+
+    risk_level: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False,
+        default="Safe",
+    )
+
+    # =========================
+    # Persistence timestamp
+    # =========================
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
         nullable=False,
     )
+
