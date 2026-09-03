@@ -91,6 +91,7 @@ def test_invalid_url_without_hostname() -> None:
     with pytest.raises(ValueError):
         analyze_url("http://")
 
+
 def test_brand_impersonation() -> None:
     """
     Trusted brand inside another domain should be detected.
@@ -252,3 +253,75 @@ def test_clean_github_url() -> None:
 
     assert result["risk_level"] == "Safe"
     assert result["risk_score"] == 0
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://mail.yahoo.com",
+        "https://edge.gycpi.b.yahoodns.net",
+        "https://status.deepseek.com",
+        "https://hif-dliq.deepseek.com",
+        "https://apmplus.volces.com",
+    ],
+)
+def test_known_legitimate_gateway_domains_are_safe(
+    url: str,
+) -> None:
+    """
+    Known legitimate gateway domains should not be
+    classified as suspicious by the final analyzer.
+    """
+
+    result = analyze_url(url)
+
+    assert result["risk_level"] == "Safe"
+    assert result["risk_score"] <= 15
+    assert result["ml_prediction"] == "legitimate"
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://apmplus.volces.com.queniusz.com",
+        "https://volces.com.evil.com",
+    ],
+)
+def test_nested_trusted_domain_is_suspicious(
+    url: str,
+) -> None:
+    """
+    A trusted domain embedded inside the subdomain of
+    another registered domain must remain suspicious.
+
+    This protects against trusted-domain impersonation
+    even when the ML model predicts legitimate.
+    """
+
+    result = analyze_url(url)
+
+    assert result["risk_level"] == "Suspicious"
+    assert result["risk_score"] >= 35
+
+    assert any(
+        "trusted-domain impersonation"
+        in reason.lower()
+        for reason in result["reasons"]
+    )
+
+
+def test_nested_trusted_domain_overrides_ml_false_negative() -> None:
+    """
+    Rule-based trusted-domain impersonation detection must
+    protect against an ML false negative.
+    """
+
+    result = analyze_url(
+        "https://volces.com.evil.com",
+    )
+
+    assert result["ml_prediction"] == "legitimate"
+    assert result["ml_probability"] < 0.5
+
+    assert result["risk_level"] == "Suspicious"
+    assert result["risk_score"] == 35
