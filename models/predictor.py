@@ -31,6 +31,10 @@ TRUSTED_DOMAINS = {
     "youtube.com",
     "linkedin.com",
     "stackoverflow.com",
+    "yahoo.com",
+    "yahoodns.net",
+    "deepseek.com",
+    "volces.com",
 }
 
 

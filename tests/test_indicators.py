@@ -3,7 +3,6 @@ import pytest
 from app.analyzer.indicators import (
     check_at_symbol,
     check_double_encoding,
-    check_encoding,
     check_external_redirect,
     check_http,
     check_ip_address,
@@ -13,6 +12,8 @@ from app.analyzer.indicators import (
     check_multiple_hyphens,
     check_subdomains,
     check_trusted_domain_impersonation,
+    check_typosquatting,
+    check_encoding,
 )
 from app.analyzer.parser import parse_url
 
@@ -154,6 +155,26 @@ def test_trusted_domain_subdomain_is_not_flagged():
     assert result == []
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://apmplus.volces.com.queniusz.com",
+        "https://volces.com.evil.com",
+    ],
+)
+def test_trusted_domain_impersonation_detects_nested_trusted_domain(
+    url,
+):
+    result = check_trusted_domain_impersonation(
+        parse(url)
+    )
+
+    assert len(result) == 1
+    assert result[0]["score"] == 25
+    assert result[0]["severity"] == "High"
+    assert "volces.com" in result[0]["reason"]
+
+
 def test_external_redirect():
     result = check_external_redirect(
         parse(
@@ -206,6 +227,25 @@ def test_double_encoding():
 )
 def test_legitimate_github_urls_have_no_impersonation(url):
     result = check_trusted_domain_impersonation(
+        parse(url)
+    )
+
+    assert result == []
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://mail.yahoo.com",
+        "https://edge.gycpi.b.yahoodns.net",
+        "https://hif-dliq.deepseek.com",
+        "https://apmplus.volces.com",
+    ],
+)
+def test_known_legitimate_gateway_domains_have_no_typosquatting(
+    url,
+):
+    result = check_typosquatting(
         parse(url)
     )
 
